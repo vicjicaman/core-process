@@ -1,0 +1,11 @@
+{
+  "fullname": "@nebulario/core-process",
+  "version": "",
+  "repository": {
+    "url": "github.com:vicjicaman/core-process.git",
+    "upstream": {}
+  },
+  "labels": {
+    "type": "npm"
+  }
+}

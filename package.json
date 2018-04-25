@@ -1,0 +1,37 @@
+{
+  "name": "@nebulario/core-process",
+  "version": "1.0.3-master",
+  "description": "Process utilities",
+  "main": "./dist/index.js",
+  "repository": "github.com:vicjicaman/core-process.git",
+  "author": "Victor Jimenez <vic@nodeflow.io>",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "6",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "lodash": "^4.17.4",
+    "npm-run-all": "^4.1.2",
+    "uglifyjs-webpack-plugin": "^1.1.2",
+    "webpack": "^3.8.1",
+    "webpack-bundle-analyzer": "^2.9.1",
+    "webpack-node-externals": "^1.6.0"
+  },
+  "scripts": {
+    "clean": "rm -Rf ./dist",
+    "build:prod": "yarn clean && webpack --config webpack.config.js --env.production ",
+    "build:dev": "yarn clean && webpack --config webpack.config.js --env.development ",
+    "analyze": "webpack --config webpack.config.js --env.analyze",
+    "prepublish": "yarn build:prod"
+  },
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "bluebird": "^3.5.1",
+    "child-process-promise": "^2.2.1"
+  },
+  "peerDependencies": {}
+}
