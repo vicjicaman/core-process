@@ -1,5 +1,6 @@
 {
   "name": "@nebulario/core-process",
+  "version": "1.0.0-master",
   "description": "Process utilities",
   "main": "./dist/index.js",
   "repository": "github.com:vicjicaman/core-process.git",
@@ -32,6 +33,5 @@
     "bluebird": "^3.5.1",
     "child-process-promise": "^2.2.1"
   },
-  "peerDependencies": {},
-  "version": "1.0.10-master"
+  "peerDependencies": {}
 }
