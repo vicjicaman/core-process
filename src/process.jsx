@@ -37,18 +37,31 @@ export async function retry(action, onError, max = 1, scale = 10) {
 }
 
 export const exec = async (cmds, opts, cnf = {}) => {
+  const {retryOn} = cnf;
   const cmd = cmds.join(';');
 
-  const {error, stdout, stderr} = await Process.exec(cmd, {
-    ...opts,
-    maxBuffer: 1024 * 30000
-  });
+  const execFn = async () => {
+    const {error, stdout, stderr} = await Process.exec(cmd, {
+      ...opts,
+      maxBuffer: 1024 * 30000
+    });
 
-  if (error) {
-    throw error;
+    if (error) {
+      throw error;
+    }
+
+    return {stdout, stderr, cmd};
   }
 
-  return {stdout, stderr, cmd};
+  return await retry(execFn, (error, i, timeout) => {
+
+    if (retryOn) {
+      return retryOn(error, i, timeout);
+    }
+
+    return false;
+  });
+
 }
 
 export const exists = (pid) => {
@@ -61,17 +74,21 @@ export const exists = (pid) => {
 }
 
 export const spawn = (cmd, args, options, cnf = {}) => {
-  const {onOutput, onError, dataRaw, onClose} = cnf;
+  const {onOutput, onError, dataRaw, onClose, logger} = cnf;
 
   const ipr = Process.spawn(cmd, args, options);
 
-  var childProcess = ipr.childProcess;
+  let childProcess = ipr.childProcess;
   spawnChildProccess.push(childProcess);
 
   childProcess.stdout.on('data', async function(data) {
     const strData = dataRaw
       ? data
       : data.toString()
+
+    if (logger) {
+      logger.debug({source: "PROCESS", data: data.toString(), id: childProcess.id})
+    }
     onOutput && await onOutput(strData, options);
   });
   childProcess.stderr.on('data', async function(data) {
