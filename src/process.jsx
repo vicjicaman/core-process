@@ -73,7 +73,7 @@ export const exists = (pid) => {
   }
 }
 
-export const spawn = (cmd, args, options, cnf = {}) => {
+export const spawn = function (cmd, args, options, cnf = {}) {
   const {onOutput, onError, dataRaw, onClose, logger} = cnf;
 
   const ipr = Process.spawn(cmd, args, options);
