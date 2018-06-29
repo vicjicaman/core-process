@@ -10,9 +10,7 @@ export function wait(timeout) {
   })
 }
 
-const spawnChildProccess = []
-
-export const getSpawnChildren = () => spawnChildProccess
+export const getSpawnChildren = () => []
 
 export async function retry(action, onError, max = 1, scale = 10) {
   const MAX_RETRIES = max;
@@ -73,24 +71,20 @@ export const exists = (pid) => {
   }
 }
 
-export const spawn = function (cmd, args, options, cnf = {}) {
+export const spawn = function(cmd, args, options, cnf = {}) {
   const {onOutput, onError, dataRaw, onClose, logger} = cnf;
 
   const ipr = Process.spawn(cmd, args, options);
 
   let childProcess = ipr.childProcess;
-  spawnChildProccess.push(childProcess);
 
   childProcess.stdout.on('data', async function(data) {
     const strData = dataRaw
       ? data
       : data.toString()
-
-    if (logger) {
-      logger.debug({source: "PROCESS", data: data.toString(), id: childProcess.id})
-    }
     onOutput && await onOutput(strData, options);
   });
+
   childProcess.stderr.on('data', async function(data) {
     const strData = dataRaw
       ? data
