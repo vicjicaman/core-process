@@ -1,6 +1,6 @@
 {
   "fullname": "@nebulario/core-process",
-  "version": "1.0.12-master",
+  "version": "1.0.21-local-ui-graph",
   "repository": {
     "url": "github.com:vicjicaman/core-process.git",
     "upstream": {}
