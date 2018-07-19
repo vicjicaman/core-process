@@ -1,6 +1,6 @@
 {
   "name": "@nebulario/core-process",
-  "version": "1.0.21-local-ui-graph",
+  "version": "1.0.21-local-ui-graph-dev",
   "description": "Process utilities",
   "main": "./dist/index.js",
   "repository": "github.com:vicjicaman/core-process.git",
