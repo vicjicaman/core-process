@@ -1,6 +1,7 @@
 import Process from 'child-process-promise';
 import Promise from 'bluebird';
 import fs from 'fs';
+const uuidv4 = require('uuid/v4');
 
 export function wait(timeout) {
   return new Promise((resolve) => {
@@ -34,7 +35,7 @@ export async function retry(action, onError, max = 1, scale = 10) {
   throw error;
 }
 
-export const exec = async (cmds, opts, cnf = {}) => {
+export const retryExec = async (cmds, opts, cnf = {}) => {
   const {retryOn} = cnf;
   const cmd = cmds.join(';');
 
@@ -59,6 +60,44 @@ export const exec = async (cmds, opts, cnf = {}) => {
 
     return false;
   });
+
+}
+
+const addToContextStream = (streams, cmd, out) => streams.push({
+  streamid: uuidv4(),
+  typeid: "process.exec",
+  origin: cmd,
+  out: out.stdout,
+  err: out.stderr,
+  code: out.code
+})
+
+export const exec = async (cmds, opts, cnf = {}) => {
+  const cmd = cmds.join(';');
+
+  try {
+
+    const out = await Process.exec(cmd, {
+      ...opts,
+      maxBuffer: 1024 * 30000
+    });
+
+    if (cnf.streams) {
+      // Testing the device
+      addToContextStream(cnf.streams, cmd, out)
+    }
+
+    return out;
+
+  } catch (e) {
+
+    if (cnf.streams) {
+      // Testing the device
+      addToContextStream(cnf.streams, cmd, e)
+    }
+
+    throw e;
+  }
 
 }
 
