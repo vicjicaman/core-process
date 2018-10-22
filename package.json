@@ -27,6 +27,8 @@
     "build:dev": "yarn clean && webpack --config webpack.config.js --env.development ",
     "start:prod": "yarn build:prod --watch",
     "start:dev": "yarn build:dev --watch",
+    "build:watch:prod": "yarn build:prod --watch",
+    "build:watch:dev": "yarn build:dev --watch",
     "analyze": "webpack --config webpack.config.js --env.analyze",
     "prepublish": "yarn build:prod"
   },
