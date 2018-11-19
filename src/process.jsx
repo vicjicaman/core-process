@@ -35,68 +35,55 @@ export async function retry(action, onError, max = 1, scale = 10) {
   throw error;
 }
 
-export const retryExec = async (cmds, opts, cnf = {}) => {
-  const {retryOn} = cnf;
+export const exec = async (cmds, opts, cnf, cxt) => {
+  const executionid = uuidv4();
   const cmd = cmds.join(';');
+  const {onStreamFrame} = cnf;
+  const metadata = JSON.stringify({
+    executionid
+  }, null, 2);
 
-  const execFn = async () => {
-    const {error, stdout, stderr} = await Process.exec(cmd, {
-      ...opts,
-      maxBuffer: 1024 * 30000
-    });
+  onStreamFrame && onStreamFrame({
+    metadata,
+    type: "cmd.exec",
+    data: cmd
+  }, cxt);
 
-    if (error) {
-      throw error;
-    }
-
-    return {stdout, stderr, cmd};
-  }
-
-  return await retry(execFn, (error, i, timeout) => {
-
-    if (retryOn) {
-      return retryOn(error, i, timeout);
-    }
-
-    return false;
-  });
-
-}
-
-const addToContextStream = (streams, cmd, out) => streams.push({
-  streamid: uuidv4(),
-  typeid: "process.exec",
-  origin: cmd,
-  out: out.stdout,
-  err: out.stderr,
-  code: out.code
-})
-
-export const exec = async (cmds, opts, cnf = {}) => {
-  const cmd = cmds.join(';');
-
+  let out = {};
   try {
 
-    const out = await Process.exec(cmd, {
+    out = await Process.exec(cmd, {
       ...opts,
       maxBuffer: 1024 * 30000
     });
 
-    if (cnf.streams) {
-      // Testing the device
-      addToContextStream(cnf.streams, cmd, out)
-    }
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.out",
+      data: out.stdout
+    }, cxt);
+
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.err",
+      data: out.stderr
+    }, cxt);
 
     return out;
-
   } catch (e) {
-
-    if (cnf.streams) {
-      // Testing the device
-      addToContextStream(cnf.streams, cmd, e)
-    }
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.error",
+      data: e.stderr
+    }, cxt);
 
     throw e;
+  } finally {
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.code",
+      data: out.code
+    }, cxt);
   }
 
 }
@@ -110,28 +97,87 @@ export const exists = (pid) => {
   }
 }
 
-export const spawn = function(cmd, args, options, cnf = {}) {
-  const {onOutput, onError, dataRaw, onClose, logger} = cnf;
+export const spawn = function(cmd, args, options, cnf = {}, cxt) {
+  const executionid = uuidv4();
+  const {onOutput, onError, onClose, onStreamFrame} = cnf;
+  const metadata = JSON.stringify({
+    executionid
+  }, null, 2);
+
+  onStreamFrame && onStreamFrame({
+    metadata,
+    type: "cmd.spawn",
+    data: JSON.stringify({
+      cmd,
+      args
+    }, null, 2)
+  }, cxt);
 
   const ipr = Process.spawn(cmd, args, options);
 
   let childProcess = ipr.childProcess;
 
-  childProcess.stdout.on('data', async function(data) {
-    const strData = dataRaw
-      ? data
-      : data.toString()
-    onOutput && await onOutput(strData, options);
+  childProcess.stdout.on('data', async function(raw) {
+    const type = "cmd.out";
+    const data = raw.toString();
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type,
+      data
+    }, cxt);
+
+    onOutput && await onOutput({
+      executionid,
+      type,
+      data,
+      raw
+    }, cxt);
   });
 
-  childProcess.stderr.on('data', async function(data) {
-    const strData = dataRaw
-      ? data
-      : data.toString()
-    onError && await onError(strData, options);
+  childProcess.stderr.on('data', async function(raw) {
+    const type = "cmd.err";
+    const data = raw.toString();
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type,
+      data
+    }, cxt);
+
+    onOutput && await onOutput({
+      executionid,
+      type,
+      data,
+      raw
+    }, cxt);
+
+  });
+  childProcess.on('error', async function(error) {
+    const type = "cmd.error";
+
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.error",
+      data: error.toString()
+    }, cxt);
+
+    onError && await onError({
+      executionid,
+      error
+    }, {cxt});
   });
   childProcess.on('close', async function(code) {
-    onClose && await onClose(code);
+    const type = "cmd.close";
+
+    onStreamFrame && onStreamFrame({
+      metadata,
+      type: "cmd.code",
+      data: code.toString()
+    }, cxt);
+
+    onClose && await onClose({
+      executionid,
+      code
+    }, cxt);
   });
 
   return {promise: ipr, process: childProcess};
