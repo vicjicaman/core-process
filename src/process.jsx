@@ -45,7 +45,8 @@ export const exec = async (cmds, opts, cnf, cxt) => {
 
   onStreamFrame && onStreamFrame({
     metadata,
-    type: "cmd.exec",
+    type: "out",
+    label: "cmd.exec",
     data: cmd
   }, cxt);
 
@@ -59,13 +60,15 @@ export const exec = async (cmds, opts, cnf, cxt) => {
 
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.out",
+      type: "out",
+      label: "cmd.out",
       data: out.stdout
     }, cxt);
 
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.err",
+      type: "warning",
+      label: "cmd.err",
       data: out.stderr
     }, cxt);
 
@@ -73,7 +76,8 @@ export const exec = async (cmds, opts, cnf, cxt) => {
   } catch (e) {
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.error",
+      type: "error",
+      label: "cmd.error",
       data: e.stderr
     }, cxt);
 
@@ -81,7 +85,8 @@ export const exec = async (cmds, opts, cnf, cxt) => {
   } finally {
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.code",
+      type: "out",
+      label: "cmd.code",
       data: out.code
     }, cxt);
   }
@@ -106,7 +111,8 @@ export const spawn = function(cmd, args, options, cnf = {}, cxt) {
 
   onStreamFrame && onStreamFrame({
     metadata,
-    type: "cmd.spawn",
+    type: "out",
+    label: "cmd.spawn",
     data: JSON.stringify({
       cmd,
       args
@@ -118,11 +124,13 @@ export const spawn = function(cmd, args, options, cnf = {}, cxt) {
   let childProcess = ipr.childProcess;
 
   childProcess.stdout.on('data', async function(raw) {
-    const type = "cmd.out";
+    const type = "out";
+    const label = "cmd.out";
     const data = raw.toString();
     onStreamFrame && onStreamFrame({
       metadata,
       type,
+      label,
       data
     }, cxt);
 
@@ -135,11 +143,13 @@ export const spawn = function(cmd, args, options, cnf = {}, cxt) {
   });
 
   childProcess.stderr.on('data', async function(raw) {
-    const type = "cmd.err";
+    const type = "warning";
+    const label = "cmd.err";
     const data = raw.toString();
     onStreamFrame && onStreamFrame({
       metadata,
       type,
+      label,
       data
     }, cxt);
 
@@ -152,11 +162,13 @@ export const spawn = function(cmd, args, options, cnf = {}, cxt) {
 
   });
   childProcess.on('error', async function(error) {
-    const type = "cmd.error";
+    const label = "cmd.error";
+    const type = "error";
 
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.error",
+      label,
+      type,
       data: error.toString()
     }, cxt);
 
@@ -166,11 +178,13 @@ export const spawn = function(cmd, args, options, cnf = {}, cxt) {
     }, {cxt});
   });
   childProcess.on('close', async function(code) {
-    const type = "cmd.close";
+    const label = "cmd.close";
+    const type = "out";
 
     onStreamFrame && onStreamFrame({
       metadata,
-      type: "cmd.code",
+      label,
+      type,
       data: code.toString()
     }, cxt);
 
