@@ -78,7 +78,7 @@ export const exec = async (cmds, opts, cnf, cxt) => {
       metadata,
       type: "error",
       label: "cmd.error",
-      data: e.stderr
+      data: e.stderr || e.toString()
     }, cxt);
 
     throw e;
