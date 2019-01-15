@@ -1,6 +1,6 @@
 {
   "name": "@nebulario/core-process",
-  "version": "1.0.11-master",
+  "version": "1.1.41-master",
   "description": "Process utilities",
   "main": "./dist/index.js",
   "repository": "github.com:vicjicaman/core-process.git",
@@ -14,7 +14,6 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-0": "^6.24.1",
     "babel-preset-stage-2": "^6.24.1",
-    "lodash": "^4.17.4",
     "npm-run-all": "^4.1.2",
     "uglifyjs-webpack-plugin": "^1.1.2",
     "webpack": "^3.8.1",
@@ -25,13 +24,18 @@
     "clean": "rm -Rf ./dist",
     "build:prod": "yarn clean && webpack --config webpack.config.js --env.production ",
     "build:dev": "yarn clean && webpack --config webpack.config.js --env.development ",
-    "analyze": "webpack --config webpack.config.js --env.analyze",
-    "prepublish": "yarn build:prod"
+    "start:prod": "yarn build:prod --watch",
+    "start:dev": "yarn build:dev --watch",
+    "build:watch:prod": "yarn build:prod --watch",
+    "build:watch:dev": "yarn build:dev --watch",
+    "analyze": "webpack --config webpack.config.js --env.analyze"
   },
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
-    "child-process-promise": "^2.2.1"
+    "child-process-promise": "^2.2.1",
+    "uuid": "^3.3.2",
+    "lodash": "^4.17.4"
   },
   "peerDependencies": {}
 }
