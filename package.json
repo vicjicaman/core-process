@@ -1,6 +1,6 @@
 {
   "name": "@nebulario/core-process",
-  "version": "1.1.41-master",
+  "version": "1.70.1-clean-baseline-prod",
   "description": "Process utilities",
   "main": "./dist/index.js",
   "repository": "github.com:vicjicaman/core-process.git",
